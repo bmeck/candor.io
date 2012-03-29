@@ -9,6 +9,7 @@ template uv_handle_t* UVData::ObjectTo<uv_handle_t>(candor::Object* obj);
 template uv_timer_t* UVData::ObjectTo<uv_timer_t>(candor::Object* obj);
 template uv_stream_t* UVData::ObjectTo<uv_stream_t>(candor::Object* obj);
 template uv_tcp_t* UVData::ObjectTo<uv_tcp_t>(candor::Object* obj);
+template uv_tty_t* UVData::ObjectTo<uv_tty_t>(candor::Object* obj);
 
 UVData::UVData(size_t size, Object* prototype) {
   // Create a new data object

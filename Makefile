@@ -27,6 +27,7 @@ LIBS=build/main.o       \
      build/luv_handle.o \
      build/luv_stream.o \
      build/luv_tcp.o    \
+     build/luv_tty.o    \
      build/luv_timer.o  \
      build/net.cc
 

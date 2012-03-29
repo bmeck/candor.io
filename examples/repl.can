@@ -1,0 +1,34 @@
+prettyPrint = global.prettyPrint
+require = global.require
+eval = global.eval
+
+subenv = {
+   require: require,
+   eval: eval
+}
+
+str = ''
+handleKeyStroke = (c) {
+   if (c == '\n' || c == '\r') {
+      prettyPrint(str)
+      value = eval(str)
+      err = global.lastError()
+      if (err != nil) {
+         prettyPrint(err)
+         return
+      }
+      prettyPrint(value)
+      str = ''
+      if (global)
+      return
+   }
+   str = str + c
+   stdout:write(1, c)
+}
+
+stdin = require('tty').create(0)
+stdout = require('tty').create(1)
+stdin:readStart(printOut(length, c) {
+   handleKeyStroke(c)
+})
+stdin:setMode(true)

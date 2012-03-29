@@ -7,6 +7,7 @@
 #include "lhttp_parser.h" // http_parser_module
 #include "luv_base.h"     // uv_base_module
 #include "luv_tcp.h"      // uv_tcp_module
+#include "luv_tty.h"      // uv_tty_module
 #include "luv_timer.h"    // uv_timer_module
 
 #include <assert.h> // assert
@@ -137,6 +138,21 @@ static Value* PrettyPrint(uint32_t argc, Value* argv[]) {
   return Nil::New();
 }
 
+static Value* Eval(uint32_t argc, Value* argv[]) {
+  assert(argc > 0);
+  Function* fn = Function::New(argv[0]->ToString()->Value());
+  if (fn == NULL) {
+    return Nil::New();
+  }
+  if (argc > 1 && argv[1]->Is<Object>()) {
+    fn->SetContext((Object*)argv[1]);
+  }
+  else {
+    fn->SetContext(cio_global_context());
+  }
+  return fn->Call(0, NULL);
+}
+
 static Value* Exit(uint32_t argc, Value* argv[]) {
   int status = 0;
   if (argc) {
@@ -144,6 +160,17 @@ static Value* Exit(uint32_t argc, Value* argv[]) {
   }
   exit(status);
   return Nil::New();
+}
+
+static Value* LastError(uint32_t argc, Value* argv[]) {
+  Isolate* iso = Isolate::GetCurrent();
+  if (!iso->HasError()) return Nil::New();
+  Error* existing = iso->GetError();
+  Object* err = new Object();
+  err->Set("filename", String::New(existing->filename));
+  err->Set("line", Number::NewIntegral(existing->line));
+  err->Set("message", String::New(existing->message));
+  return err;
 }
 
 static Value* LoadBuiltin(uint32_t argc, Value* argv[]) {
@@ -157,6 +184,7 @@ static Value* LoadBuiltin(uint32_t argc, Value* argv[]) {
   if (0 == strcmp(name, "uv")) return uv_base_module();
   if (0 == strcmp(name, "timer")) return uv_timer_module();
   if (0 == strcmp(name, "tcp")) return uv_tcp_module();
+  if (0 == strcmp(name, "tty")) return uv_tty_module();
   if (0 == strcmp(name, "http_parser")) return http_parser_module();
   return Nil::New();
 }
@@ -167,6 +195,8 @@ Object* cio_global_context() {
   global.Wrap(Object::New());
   global->Set("print", Function::New(Print));
   global->Set("prettyPrint", Function::New(PrettyPrint));
+  global->Set("eval", Function::New(Eval));
+  global->Set("lastError", Function::New(LastError));
   global->Set("exit", Function::New(Exit));
   global->Set("require", Function::New(LoadBuiltin));
   return *global;
